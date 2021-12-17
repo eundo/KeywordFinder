@@ -14,6 +14,9 @@ namespace KeywordFinder
             public string name;
             public string type;
             public string url;
+            public List<Children> children;
+
+                
         }
 
         public class Bookmark

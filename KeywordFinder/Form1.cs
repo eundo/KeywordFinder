@@ -1,8 +1,10 @@
 ﻿using EvernoteSDK;
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+
 
 namespace KeywordFinder
 {
@@ -20,6 +22,8 @@ namespace KeywordFinder
             InitializeComponent();
 
             dgvEvernoteApiKey.Rows.Add("S=s1:U=968f6:E=18511093430:C=17db9580830:P=1cd:A=en-devtoken:V=2:H=9d15dc7a7053c86a49918011f027574e");
+
+                                        //S=s1:U=8f219:E = 154308dc976: C = 14cd8dc9cd8: P = 1cd: A = en - devtoken:V = 2:H = 1e4d28c7982faf6222ecf55df3a2e84b
         }
 
         private void btnKeywordSearch_Click(object sender, EventArgs e)
@@ -61,21 +65,55 @@ namespace KeywordFinder
         {
             List<ChromeBookmark.Children> findResult = new List<ChromeBookmark.Children>();
 
-            string path = @"C:\Users\whhan\AppData\Local\Google\Chrome\User Data\Default\Bookmarks";
+            string path = @"C:\Users\eundo\AppData\Local\Google\Chrome\User Data\Default\Bookmarks";
             if (System.IO.File.Exists(path))
             {
                 string bookmarkJson = System.IO.File.ReadAllText(path);
 
                 ChromeBookmark bookmarks = JsonConvert.DeserializeObject<ChromeBookmark>(bookmarkJson);
 
+
+                //Newtonsoft.Json.Linq.JObject dd = Newtonsoft.Json.Linq.JObject.Parse(bookmarkJson);
+
+
+
                 foreach (var children in bookmarks.roots.bookmarkBar.childrens)
                 {
-                    string keywordLower = keyword.ToLower();
-                    string name = children.name.ToLower();
-                    string url = children.url.ToLower();
+                    
+                    if(children.type.Equals("url") ) {
+                        string keywordLower = keyword.ToLower();
+                        string name = children.name.ToLower();
+                        string url = children.url.ToLower();
+                        System.Diagnostics.Debug.WriteLine("url + " + url);
+                        System.Diagnostics.Debug.WriteLine("name + " + name);
+                        if (name.Contains(keywordLower) || url.Contains(keywordLower))
+                        {
+                            System.Diagnostics.Debug.WriteLine("children + " + children);
+                            findResult.Add(children);
+                        }
+                    }
+                    else
+                    {
+                        if (children.children.Count > 0) { 
+                            foreach(var child in children.children)
+                            {
+                                if (child.type.Equals("url"))
+                                {
+                                    string keywordLower = keyword.ToLower();
+                                    string name = child.name.ToLower();
+                                    string url = child.url.ToLower();
+                                    System.Diagnostics.Debug.WriteLine("child : url + " + url);
+                                    System.Diagnostics.Debug.WriteLine("child : name + " + name);
+                                    if (name.Contains(keywordLower) || url.Contains(keywordLower))
+                                    {
+                                        System.Diagnostics.Debug.WriteLine("child + " + child);
+                                        findResult.Add(child);
+                                    }
+                                }
+                            }
+                        }
 
-                    if (name.Contains(keywordLower) || url.Contains(keywordLower))
-                        findResult.Add(children);
+                    }
                 }
             }
 
@@ -94,7 +132,7 @@ namespace KeywordFinder
             // https://dev.evernote.com/support/ 방문하여 [activate an API Key] 를 통해서 production key 를 발급 받아야 함
 
             // production key 를 발급 받으면 아래 함수로 production key, secret 로 요청하여 사용 할 수 있다.
-            // ENSession.SetSharedSessionConsumerKey(key, secret);
+            //ENSession.SetSharedSessionConsumerKey("eundo93", "62400460f3998843");
 
             // notestore URL 은 고정
             ENSession.SetSharedSessionDeveloperToken(token, "https://sandbox.evernote.com/shard/s1/notestore");
